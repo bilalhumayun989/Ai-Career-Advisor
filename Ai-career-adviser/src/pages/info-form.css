@@ -1,0 +1,124 @@
+.custom-form-wrapper {
+  background: var(--midnight-grid);
+  padding: 60px 20px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 40px auto;
+  min-height: 80vh;
+}
+
+.custom-form-title {
+  font-size: clamp(24px, 4vw, 36px);
+  text-align: center;
+  color: var(--pure-signal);
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.custom-form-subtitle {
+  font-size: 16px;
+  text-align: center;
+  color: var(--pure-signal-dim);
+  margin-bottom: 40px;
+}
+
+.custom-form-body {
+  background: var(--carbon-core-deep);
+  border: 1px solid var(--glass-border);
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.custom-form-body label {
+  display: block;
+  text-align: left;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--pure-signal);
+  font-size: 14px;
+}
+
+.custom-form-input {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 16px;
+  color: var(--pure-signal);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.custom-form-input:focus {
+  border-color: var(--cyan-pulse);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px var(--cyan-pulse-glow);
+}
+
+.custom-form-input.error {
+  border-color: #ef4444;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.custom-form-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  gap: 20px;
+}
+
+.custom-form-btn {
+  padding: 14px 30px;
+  border-radius: 12px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all var(--transition-normal);
+  flex: 1;
+}
+
+.custom-form-btn.previous {
+  background: transparent;
+  color: var(--pure-signal);
+  border: 1px solid var(--glass-border);
+}
+
+.custom-form-btn.previous:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--pure-signal);
+}
+
+.custom-form-btn.next {
+  background: var(--cyan-pulse);
+  color: var(--midnight-grid);
+  box-shadow: 0 0 15px var(--cyan-pulse-glow);
+}
+
+.custom-form-btn.next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px var(--cyan-pulse-glow);
+  background: #fff;
+}
+
+@media (max-width: 600px) {
+  .custom-form-body {
+    padding: 24px;
+  }
+
+  .custom-form-navigation {
+    flex-direction: column-reverse;
+  }
+}
