@@ -4,7 +4,7 @@ import {
   BrainCircuit, Target, Users, Zap, ShieldCheck,
   TrendingUp, ArrowRight, CheckCircle2, Star, Award
 } from 'lucide-react';
-import './About.css';
+import './about.css';
 import Footer from "../components/footer";
 import Navbar from '../components/Navbar';
 
