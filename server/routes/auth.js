@@ -4,10 +4,15 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const router = express.Router();
-const JWT_SECRET = "your_jwt_secret_key"; // Replace with a secure key
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET must be set in the server environment.");
+}
 
 // Signup Route
 router.post("/signup", async (req, res) => {
+  console.log("Signup request body:", req.body);
   const { name, email, password, confirmPassword } = req.body;
 
   if (!name || !email || !password || !confirmPassword)
@@ -27,6 +32,10 @@ router.post("/signup", async (req, res) => {
     await user.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
+    console.error("Signup error:", err.stack || err);
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
     res.status(500).json({ message: "Server error" });
   }
 });

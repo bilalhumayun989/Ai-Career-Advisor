@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require('body-parser');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 const authRoutes = require("./routes/auth");
 
 const app = express();
@@ -11,21 +11,34 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
+const mongoUri = process.env.MONGO_URI;
+if (!mongoUri) {
+  console.error("MongoDB error: MONGO_URI is not set in server/.env");
+  process.exit(1);
+}
+
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(mongoUri)
   .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.error("MongoDB error:", err));
+  .catch((err) => {
+    console.error("MongoDB error:", err);
+    console.error(
+      "MongoDB connection failed. Verify your Atlas URI, network access list, and DNS resolution for the SRV host."
+    );
+    process.exit(1);
+  });
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use(bodyParser.json());
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+app.post('/api/career', async (req, res) => {
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(503).json({
+      result: 'OpenAI is not configured. Add OPENAI_API_KEY to server/.env, then restart the server.',
+    });
+  }
 
-app.post('/api/gemini-career', async (req, res) => {
   const {
     fullName,
     age,
@@ -54,14 +67,18 @@ Based on this profile, suggest a personalized career path. Include:
 `;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    res.json({ result: text });
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const response = await openai.responses.create({
+      model: process.env.OPENAI_MODEL || 'gpt-5.6-luna',
+      input: prompt,
+    });
+
+    res.json({ result: response.output_text });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ result: 'Failed to generate response from Gemini.' });
+    console.error('OpenAI career request failed:', err.message);
+    res.status(502).json({
+      result: 'OpenAI could not generate a career path. Check OPENAI_API_KEY, account billing, and the configured model, then try again.',
+    });
   }
 });
 

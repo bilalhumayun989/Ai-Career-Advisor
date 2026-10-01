@@ -1,29 +1,50 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 :root {
-    /* Core Colors */
-    --cyan-pulse: #00f2ff;
-    --cyan-pulse-glow: rgba(0, 242, 255, 0.5);
-    --midnight-grid: #020617;
-    --midnight-grid-light: #0f172a;
-    --pure-signal: #f8fafc;
-    --pure-signal-dim: #94a3b8;
-    --carbon-core: #1e293b;
-    --carbon-core-deep: #0f172a;
+    /* === New Blue & White Design System === */
+    --primary-blue: #2563EB;
+    --dark-blue: #1D4ED8;
+    --sky-blue: #60A5FA;
+    --sky-blue-light: rgba(96, 165, 250, 0.1);
 
-    /* Gradients */
-    --bg-gradient: radial-gradient(circle at top right, #001f3f, var(--midnight-grid));
-    --card-gradient: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
+    /* Backgrounds */
+    --bg-white: #FFFFFF;
+    --bg-light: #F8FAFC;
+    --bg-muted: #F1F5F9;
 
-    /* Glassmorphism */
-    --glass-bg: rgba(15, 23, 42, 0.7);
-    --glass-border: rgba(0, 242, 255, 0.1);
-    --glass-blur: blur(12px);
+    /* Text */
+    --text-near-black: #111827;
+    --text-dark: #1F2937;
+    --text-muted: #6B7280;
+
+    /* Borders */
+    --border-light: #E2E8F0;
+    --border-blue: rgba(37, 99, 235, 0.2);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-blue: 0 4px 20px rgba(37, 99, 235, 0.15);
+    --shadow-blue-hover: 0 8px 30px rgba(37, 99, 235, 0.25);
 
     /* Transitions */
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
-}
+
+    /* Legacy aliases kept for backward compat with non-landing pages */
+    --cyan-pulse: #2563EB;
+    --cyan-pulse-glow: rgba(37, 99, 235, 0.4);
+    --midnight-grid: #F8FAFC;
+    --midnight-grid-light: #F1F5F9;
+    --pure-signal: #111827;
+    --pure-signal-dim: #6B7280;
+    --carbon-core: #FFFFFF;
+    --carbon-core-deep: #F8FAFC;
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: #E2E8F0;
+    --glass-blur: blur(12px);
+    --bg-gradient: linear-gradient(135deg, #EFF6FF, #FFFFFF);
+    --card-gradient: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.95));}
 
 * {
     margin: 0;
@@ -33,8 +54,8 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--midnight-grid);
-    color: var(--pure-signal);
+    background-color: var(--bg-white);
+    color: var(--text-near-black);
     min-height: 100vh;
     overflow-x: hidden;
     line-height: 1.6;
@@ -47,23 +68,7 @@ h4,
 h5,
 h6 {
     font-family: 'Space Grotesk', sans-serif;
-    color: var(--pure-signal);
-}
-
-/* Midnight Grid Background Effect */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-        linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: -1;
+    color: var(--text-near-black);
 }
 
 /* Custom Scrollbar */
@@ -72,14 +77,14 @@ body::before {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--midnight-grid);
+    background: var(--bg-light);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--carbon-core);
+    background: var(--border-light);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--cyan-pulse);
+    background: var(--primary-blue);
 }

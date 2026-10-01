@@ -1,151 +1,132 @@
 import React, { useState } from "react";
-import "./login.css";
-import { motion } from "framer-motion";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import "./login.css";
 
-const AuthContainer = () => {
-  const [isRightPanelActive, setIsRightPanelActive] = useState(false);
-  const navigate = useNavigate()
-  // Sign Up State
-  const [signupData, setSignupData] = useState({
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const Login = () => {
+  const [isSignup, setIsSignup] = useState(false);
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("error");
+  const navigate = useNavigate();
 
-  // Login State
-  const [loginData, setLoginData] = useState({
-    email: "",
-    password: "",
-  });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  // Signup Handler
-  const handleSignup = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (signupData.password !== signupData.confirmPassword) {
-      alert("Passwords do not match!");
+    setMessage("");
+
+    if (!formData.email || !formData.password || (isSignup && (!formData.name || !formData.confirmPassword))) {
+      setMessageType("error");
+      setMessage("Please fill in all required fields.");
       return;
     }
 
-    try {
-      const res = await axios.post("http://localhost:5000/api/auth/signup", signupData);
-      alert(res.data.message);
-      setIsRightPanelActive(false); // switch to login panel
-    } catch (err) {
-      alert(err.response?.data?.message || "Signup failed.");
+    if (isSignup && formData.password !== formData.confirmPassword) {
+      setMessageType("error");
+      setMessage("Passwords do not match. Please try again.");
+      return;
     }
-  };
 
-  // Login Handler
-  const handleLogin = async (e) => {
-    e.preventDefault();
+    const endpoint = isSignup ? "/api/auth/signup" : "/api/auth/login";
+    const payload = isSignup
+      ? {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+        }
+      : {
+          email: formData.email,
+          password: formData.password,
+        };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", loginData);
-      // alert(res.data.message);
-      localStorage.setItem("token", res.data.token); // save token if using JWT
-      navigate('/')
-      // redirect or update UI here
+      const res = await axios.post(`${API_BASE_URL}${endpoint}`, payload);
+      if (isSignup) {
+        setMessageType("success");
+        setMessage(res.data.message || "Signup successful. Please sign in.");
+        setIsSignup(false);
+        setFormData({ name: "", email: "", password: "", confirmPassword: "" });
+      } else {
+        localStorage.setItem("token", res.data.token);
+        navigate("/");
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed.");
+      setMessageType("error");
+      setMessage(err.response?.data?.message || "Request failed. Please try again.");
     }
   };
 
   return (
-    <motion.div
-      className="main"
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -30 }}
-      transition={{ duration: 0.6, ease: "easeInOut" }}
-    >
-      <div className={`container ${isRightPanelActive ? "right-panel-active" : ""}`} id="container">
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1>{isSignup ? "Create Account" : "Sign In"}</h1>
+        <p>{isSignup ? "Enter your details to start." : "Enter your email and password."}</p>
 
-        {/* Sign Up Form */}
-        <div className="form-container sign-up-container">
-          <form onSubmit={handleSignup}>
-            <h1 className="heading-primary">Create Account</h1>
-            <p className="text-paragraph"><span>or use your email for registration</span></p>
-            <input type="text" placeholder="Name" value={signupData.name}
-              onChange={(e) => setSignupData({ ...signupData, name: e.target.value })} required />
-            <input type="email" placeholder="Email" value={signupData.email}
-              onChange={(e) => setSignupData({ ...signupData, email: e.target.value })} required />
-            <input type="password" placeholder="Password" value={signupData.password}
-              onChange={(e) => setSignupData({ ...signupData, password: e.target.value })} required />
-            <input type="password" placeholder="Confirm Password" value={signupData.confirmPassword}
-              onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })} required />
+        <form onSubmit={handleSubmit} className="auth-form">
+          {isSignup && (
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              placeholder="Name"
+              onChange={handleChange}
+              required
+            />
+          )}
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            placeholder="Email"
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            placeholder="Password"
+            onChange={handleChange}
+            required
+          />
+          {isSignup && (
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              placeholder="Confirm Password"
+              onChange={handleChange}
+              required
+            />
+          )}
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="btn-sign"
-              type="submit"
-            >
-              Sign Up
-            </motion.button>
+          <button type="submit" className="auth-button">
+            {isSignup ? "Sign Up" : "Sign In"}
+          </button>
+        </form>
 
-            <p className="switch-text">
-              Already have an account?{" "}
-              <button type="button" className="switch-link" onClick={() => setIsRightPanelActive(false)}>
-                Sign In
-              </button>
-            </p>
-          </form>
+        <div className="auth-switch">
+          <span>{isSignup ? "Already have an account?" : "Don’t have an account?"}</span>
+          <button type="button" onClick={() => { setIsSignup(!isSignup); setMessage(""); setMessageType("error"); }}>
+            {isSignup ? "Sign In" : "Sign Up"}
+          </button>
         </div>
 
-        {/* Login Form */}
-        <div className="form-container sign-in-container">
-          <form onSubmit={handleLogin}>
-            <h3 className="heading-primary">Sign in to Ai Career Advisor</h3>
-            <p className="text-paragraph"><span>or use your account</span></p>
-            <input type="email" placeholder="Email" value={loginData.email}
-              onChange={(e) => setLoginData({ ...loginData, email: e.target.value })} required />
-            <input type="password" placeholder="Password" value={loginData.password}
-              onChange={(e) => setLoginData({ ...loginData, password: e.target.value })} required />
-
-            <a href="#">Forgot your password?</a>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="btn-sign"
-              type="submit"
-            >
-              Sign In
-            </motion.button>
-
-            <p className="switch-text">
-              Don’t have an account?{" "}
-              <button type="button" className="switch-link" onClick={() => setIsRightPanelActive(true)}>
-                Sign Up
-              </button>
-            </p>
-          </form>
-        </div>
-
-        {/* Overlay */}
-        <div className="overlay-container">
-          <div className="overlay">
-            <div className="overlay-panel overlay-left">
-              <h1 className="heading-primary">Welcome Back!</h1>
-              <p>To keep connected with us please login with your personal info</p>
-              <button className="ghost btn-sign" id="signIn" onClick={() => setIsRightPanelActive(false)}>
-                Sign In
-              </button>
-            </div>
-            <div className="overlay-panel overlay-right">
-              <h1 className="heading-primary">Hello, Friend!</h1>
-              <p>Enter your personal details and start journey with us</p>
-              <button className="ghost btn-sign" id="signUp" onClick={() => setIsRightPanelActive(true)}>
-                Sign Up
-              </button>
-            </div>
-          </div>
-        </div>
+        {message && <div className={`auth-message auth-message--${messageType}`}>{message}</div>}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
-export default AuthContainer;
+export default Login;
