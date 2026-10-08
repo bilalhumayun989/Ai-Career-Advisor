@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  passwordChangedAt: {
+    type: Date,
+    default: null,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);
