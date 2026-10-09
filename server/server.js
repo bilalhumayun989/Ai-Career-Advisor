@@ -1,36 +1,16 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-const bodyParser = require('body-parser');
 const OpenAI = require('openai');
 const authRoutes = require("./routes/auth");
+const { initializeDatabase, pool } = require("./db");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-const mongoUri = process.env.MONGO_URI;
-if (!mongoUri) {
-  console.error("MongoDB error: MONGO_URI is not set in server/.env");
-  process.exit(1);
-}
-
-mongoose
-  .connect(mongoUri)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => {
-    console.error("MongoDB error:", err);
-    console.error(
-      "MongoDB connection failed. Verify your Atlas URI, network access list, and DNS resolution for the SRV host."
-    );
-    process.exit(1);
-  });
-
 // Routes
 app.use("/api/auth", authRoutes);
-app.use(bodyParser.json());
 
 app.post('/api/career', async (req, res) => {
   if (!process.env.OPENAI_API_KEY) {
@@ -83,4 +63,25 @@ Based on this profile, suggest a personalized career path. Include:
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
+async function startServer() {
+  await initializeDatabase();
+  const server = app.listen(PORT, () => {
+    console.log(`PostgreSQL connected. Server running on port ${PORT}.`);
+  });
+
+  const shutdown = () => {
+    server.close(async () => {
+      await pool.end();
+      process.exit(0);
+    });
+  };
+  process.once("SIGINT", shutdown);
+  process.once("SIGTERM", shutdown);
+}
+
+startServer().catch(async (err) => {
+  console.error("Could not start backend with PostgreSQL:", err.message);
+  await pool.end();
+  process.exit(1);
+});

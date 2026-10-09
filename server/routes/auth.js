@@ -49,18 +49,16 @@ router.post("/signup", async (req, res) => {
     return res.status(400).json({ message: "Passwords do not match" });
 
   try {
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findByEmail(email);
     if (userExists)
       return res.status(400).json({ message: "Email already registered" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
-
-    await user.save();
+    await User.create({ name, email, password: hashedPassword });
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     console.error("Signup error:", err.stack || err);
-    if (err.code === 11000) {
+    if (err.code === "23505") {
       return res.status(400).json({ message: "Email already registered" });
     }
     res.status(500).json({ message: "Server error" });
@@ -74,7 +72,7 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ message: "All fields are required" });
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findByEmail(email);
     
     if (!user)
       return res.status(400).json({ message: "Invalid email or password" });
@@ -82,7 +80,7 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res.status(400).json({ message: "Invalid email or password" });
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
     res.status(200).json({ token, user: { name: user.name, email: user.email } });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -96,9 +94,8 @@ router.patch("/profile", requireAuth, async (req, res) => {
   }
 
   try {
-    req.accountUser.name = name;
-    await req.accountUser.save();
-    return res.json({ user: { name: req.accountUser.name, email: req.accountUser.email } });
+    const user = await User.updateName(req.accountUser.id, name);
+    return res.json({ user: { name: user.name, email: user.email } });
   } catch (err) {
     console.error("Profile update failed:", err.message);
     return res.status(500).json({ message: "Could not update your profile." });
@@ -123,9 +120,8 @@ router.patch("/password", requireAuth, async (req, res) => {
   try {
     const matches = await bcrypt.compare(currentPassword, req.accountUser.password);
     if (!matches) return res.status(400).json({ message: "Current password is incorrect." });
-    req.accountUser.password = await bcrypt.hash(newPassword, 10);
-    req.accountUser.passwordChangedAt = new Date();
-    await req.accountUser.save();
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await User.updatePassword(req.accountUser.id, passwordHash);
     return res.json({ message: "Password changed successfully." });
   } catch (err) {
     console.error("Password update failed:", err.message);
